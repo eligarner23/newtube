@@ -1,12 +1,10 @@
-[
-  {
-    "id": "video1",
-    "title": "My First Video",
-    "description": "This is a test video.",
-    "thumbnail": "thumb1.png",
-    "file": "video1.mp4",
-    "channel": "RealTimeModds",
-    "views": 123,
-    "uploaded": "2026-07-10"
-  }
-]
+{
+  "id": "video1",
+  "title": "Random Test Video",
+  "description": "A random YouTube video used for testing NewTube.",
+  "thumbnail": "thumb1.png",
+  "file": "video1.mp4",
+  "channel": "RealTimeModds",
+  "views": 0,
+  "uploaded": "2026-07-10"
+}
