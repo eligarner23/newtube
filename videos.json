@@ -1,10 +1,52 @@
-{
-  "id": "video1",
-  "title": "Random Test Video",
-  "description": "A random YouTube video used for testing NewTube.",
-  "thumbnail": "thumb1.png",
-  "file": "video1.mp4",
-  "channel": "RealTimeModds",
-  "views": 0,
-  "uploaded": "2026-07-10"
-}
+[
+  {
+    "id": "video1",
+    "title": "Random Test Video",
+    "description": "A random YouTube video used for testing NewTube.",
+    "thumbnail": "thumb1.png",
+    "file": "video1.mp4",
+    "channel": "RealTimeModds",
+    "views": 0,
+    "uploaded": "2026-07-10"
+  },
+  {
+    "id": "video2",
+    "title": "Funny Clip",
+    "description": "A short funny moment captured on camera.",
+    "thumbnail": "funny.png",
+    "file": "video2.mp4",
+    "channel": "Guest_54321",
+    "views": 12,
+    "uploaded": "2026-07-11"
+  },
+  {
+    "id": "video3",
+    "title": "Gameplay Demo",
+    "description": "Quick gameplay showcase from a retro game.",
+    "thumbnail": "gameplay.png",
+    "file": "video3.mp4",
+    "channel": "PlayerOne",
+    "views": 5,
+    "uploaded": "2026-07-11"
+  },
+  {
+    "id": "video4",
+    "title": "Music Remix",
+    "description": "A remix made using free samples and loops.",
+    "thumbnail": "remix.png",
+    "file": "video4.mp4",
+    "channel": "DJMix",
+    "views": 3,
+    "uploaded": "2026-07-11"
+  },
+  {
+    "id": "video5",
+    "title": "Tutorial",
+    "description": "A short tutorial explaining how something works.",
+    "thumbnail": "tutorial.png",
+    "file": "video5.mp4",
+    "channel": "Eli",
+    "views": 1,
+    "uploaded": "2026-07-11"
+  }
+]
