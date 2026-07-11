@@ -1,22 +1,3 @@
-<?php
-session_start();
-include("db.php");
-
-// --------------------------------------
-// AUTO-GUEST ACCOUNT SYSTEM (PHP version)
-// --------------------------------------
-if (!isset($_SESSION['username'])) {
-    $_SESSION['username'] = "Guest_" . rand(10000, 99999);
-    $_SESSION['guest'] = true;
-} else {
-    $_SESSION['guest'] = false;
-}
-
-// --------------------------------------
-// LOAD VIDEOS FROM DATABASE
-// --------------------------------------
-$videos = $conn->query("SELECT * FROM videos ORDER BY id DESC LIMIT 40");
-?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -129,7 +110,7 @@ $videos = $conn->query("SELECT * FROM videos ORDER BY id DESC LIMIT 40");
 
     <!-- Top Navigation -->
     <div class="topbar">
-        <div class="logo" onclick="location.href='index.php'">NewTube</div>
+        <div class="logo" onclick="location.href='index.html'">NewTube</div>
 
         <div class="search-box">
             <input id="searchInput" type="text" placeholder="Search videos…">
@@ -143,34 +124,14 @@ $videos = $conn->query("SELECT * FROM videos ORDER BY id DESC LIMIT 40");
     <div class="content">
         <div class="section-title">Featured Videos</div>
 
-        <div class="video-grid">
-            <?php while ($v = $videos->fetch_assoc()): ?>
-                <div class="video-card <?php echo $_SESSION['theme'] ?? 'light'; ?>"
-                     onclick="location.href='watch.php?id=<?php echo $v['id']; ?>'">
-
-                    <div class="thumbnail"
-                         style="background-image:url('thumbs/<?php echo $v['thumbnail']; ?>')"></div>
-
-                    <div class="video-title"><?php echo $v['title']; ?></div>
-
-                    <div class="video-meta">
-                        <a href="channel.php?u=<?php echo $v['uploader']; ?>"
-                           style="color:inherit; text-decoration:none;">
-                            <?php echo $v['uploader']; ?>
-                        </a>
-                        • <?php echo $v['views']; ?> views
-                    </div>
-                </div>
-            <?php endwhile; ?>
-        </div>
+        <!-- JS will fill this -->
+        <div id="videoGrid" class="video-grid"></div>
     </div>
 
 <script>
-// THEME SYSTEM
+// THEME SYSTEM (unchanged)
 function applyTheme() {
-    let theme = localStorage.getItem("token")
-        ? localStorage.getItem("user_theme") || "light"
-        : localStorage.getItem("g_theme") || "light";
+    let theme = localStorage.getItem("user_theme") || "light";
 
     document.body.classList.remove("light", "dark");
     document.body.classList.add(theme);
@@ -178,41 +139,46 @@ function applyTheme() {
     const topbar = document.querySelector(".topbar");
     topbar.classList.remove("light", "dark");
     topbar.classList.add(theme);
-
-    document.querySelectorAll(".video-card").forEach(el => {
-        el.classList.remove("light", "dark");
-        el.classList.add(theme);
-    });
 }
 
 applyTheme();
 
-// AUTH BUTTONS
+// AUTH BUTTONS (static version)
 function updateAuthButtons() {
-    const username = "<?php echo $_SESSION['username']; ?>";
-    const isGuest = <?php echo $_SESSION['guest'] ? 'true' : 'false'; ?>;
+    const username = localStorage.getItem("username") || "Guest_" + Math.floor(Math.random()*99999);
+    localStorage.setItem("username", username);
+
     const box = document.getElementById("authButtons");
 
     box.innerHTML = `
-        <div class="nav-btn" onclick="location.href='upload.php'">Upload</div>
-        <div class="nav-btn" onclick="location.href='channel.php?u=${username}'">My Channel</div>
-        <div class="nav-btn" onclick="location.href='settings.php'">Settings</div>
-        <div class="nav-btn" onclick="location.href='logout.php'">Logout</div>
+        <div class="nav-btn" onclick="location.href='upload.html'">Upload</div>
+        <div class="nav-btn" onclick="location.href='channel.html?u=${username}'">My Channel</div>
+        <div class="nav-btn" onclick="location.href='settings.html'">Settings</div>
+        <div class="nav-btn" onclick="logout()">Logout</div>
     `;
 
-    document.getElementById("guestLabel").textContent = isGuest ? "Guest Mode" : "";
+    document.getElementById("guestLabel").textContent =
+        username.startsWith("Guest") ? "Guest Mode" : "";
 }
 
 updateAuthButtons();
+
+// LOGOUT
+function logout() {
+    localStorage.removeItem("username");
+    location.reload();
+}
 
 // SEARCH
 function doSearch() {
     const q = document.getElementById("searchInput").value.trim();
     if (q !== "") {
-        location.href = `search.php?q=${encodeURIComponent(q)}`;
+        location.href = `search.html?q=${encodeURIComponent(q)}`;
     }
 }
 </script>
+
+<script src="index.js"></script>
 
 </body>
 </html>
