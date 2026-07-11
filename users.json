@@ -1,1 +1,32 @@
-[]
+[
+  {
+    "username": "RealTimeModds",
+    "pfp": "default.png",
+    "description": "Welcome to my channel!",
+    "join_date": "2026-07-10"
+  },
+  {
+    "username": "Guest_54321",
+    "pfp": "default_guest.png",
+    "description": "This is a temporary guest channel.",
+    "join_date": "2026-07-11"
+  },
+  {
+    "username": "PlayerOne",
+    "pfp": "player.png",
+    "description": "I upload gameplay demos and highlights.",
+    "join_date": "2026-07-11"
+  },
+  {
+    "username": "DJMix",
+    "pfp": "dj.png",
+    "description": "Music remixes and loops.",
+    "join_date": "2026-07-11"
+  },
+  {
+    "username": "Eli",
+    "pfp": "eli.png",
+    "description": "Just testing NewTube Classic!",
+    "join_date": "2026-07-11"
+  }
+]
