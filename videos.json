@@ -1,1 +1,12 @@
-
+[
+  {
+    "id": "video1",
+    "title": "My First Video",
+    "description": "This is a test video.",
+    "thumbnail": "thumb1.png",
+    "file": "video1.mp4",
+    "channel": "RealTimeModds",
+    "views": 123,
+    "uploaded": "2026-07-10"
+  }
+]
