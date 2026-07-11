@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NewTube Classic – Profile</title>
+
+    <link rel="icon" type="image/png" href="favicon.png">
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        /* Light Theme */
+        body.light { background-color: #e2e2e2; color: black; }
+        .topbar.light { background-color: #cc0000; color: white; }
+        .content-box.light { background-color: white; color: black; }
+
+        /* Dark Theme */
+        body.dark { background-color: #1a1a1a; color: white; }
+        .topbar.dark { background-color: #111; color: white; }
+        .content-box.dark { background-color: #2a2a2a; color: white; }
+
+        /* Topbar */
+        .topbar {
+            padding: 6px 20px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #000;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            margin-right: 30px;
+            cursor: pointer;
+        }
+
+        .tabs { margin-left: 20px; font-size: 14px; }
+        .tabs span { margin-right: 15px; cursor: pointer; color: white; }
+        .tabs span:hover { text-decoration: underline; }
+
+        .search-box { display: flex; flex: 1; margin-left: 40px; }
+        .search-box input { width: 100%; padding: 5px; border: 1px solid #888; border-right: none; }
+        .search-box button { padding: 6px 12px; border: 1px solid #888; background-color: #f2f2f2; cursor: pointer; }
+
+        .nav-btn {
+            margin-left: 15px;
+            background-color: white;
+            color: #cc0000;
+            padding: 5px 10px;
+            border: 1px solid #cc0000;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* Layout */
+        .container {
+            width: 900px;
+            margin: 20px auto;
+        }
+
+        .content-box {
+            padding: 20px;
+            border: 1px solid #aaa;
+        }
+
+        .profile-header {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .profile-pic {
+            width: 120px;
+            height: 120px;
+            background-color: #ccc;
+            border: 1px solid #888;
+        }
+
+        .profile-info h2 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .profile-info p {
+            margin: 5px 0;
+        }
+
+        .video-list {
+            margin-top: 20px;
+        }
+
+        .video-item {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+            cursor: pointer;
+        }
+
+        .video-item img {
+            width: 160px;
+            height: 90px;
+            object-fit: cover;
+            border: 1px solid #888;
+        }
+
+        .video-title {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .video-meta {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .msg-btn {
+            background-color: #cc0000;
+            color: white;
+            padding: 6px 12px;
+            border: 1px solid #880000;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .msg-btn:hover {
+            background-color: #b30000;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- Topbar -->
+<div class="topbar">
+    <div class="logo" onclick="location.href='legacy_index.html'">NewTube</div>
+
+    <div class="tabs">
+        <span onclick="location.href='legacy_search.html?q=all'">Videos</span>
+        <span onclick="location.href='legacy_channels.html'">Channels</span>
+        <span onclick="location.href='legacy_community.html'">Community</span>
+        <span onclick="location.href='legacy_inbox.html'">Inbox</span>
+    </div>
+
+    <div class="search-box">
+        <input id="searchInput" type="text" placeholder="Search videos…">
+        <button onclick="doSearch()">Search</button>
+    </div>
+
+    <div id="authButtons" style="display:flex; gap:10px; margin-left:20px;"></div>
+    <div id="guestLabel" style="margin-left:10px; font-weight:bold;"></div>
+</div>
+
+<div class="container">
+    <div class="content-box" id="contentBox">
+
+        <div class="profile-header">
+            <img id="profilePic" class="profile-pic" src="defaultpfp.png">
+
+            <div class="profile-info">
+                <h2 id="profileName">Loading…</h2>
+                <p id="profileBio">Bio: Loading…</p>
+                <p id="profileJoin">Joined: Loading…</p>
+
+                <button id="msgButton" class="msg-btn" style="display:none;" onclick="messageUser()">Send Message</button>
+            </div>
+        </div>
+
+        <h3>Videos by this user</h3>
+        <div id="videoList" class="video-list">Loading videos…</div>
+
+    </div>
+</div>
+
+<script>
+// -------------------------------
+// THEME SYSTEM
+// -------------------------------
+function applyTheme() {
+    let theme = localStorage.getItem("token")
+        ? localStorage.getItem("user_theme") || "light"
+        : localStorage.getItem("g_theme") || "light";
+
+    document.body.className = theme;
+    document.querySelector(".topbar").className = "topbar " + theme;
+    document.getElementById("contentBox").className = "content-box " + theme;
+}
+
+applyTheme();
+
+// -------------------------------
+// AUTH BUTTONS
+// -------------------------------
+function updateAuthButtons() {
+    const token = localStorage.getItem("token");
+    const box = document.getElementById("authButtons");
+
+    if (token) {
+        box.innerHTML = `
+            <div class="nav-btn" onclick="location.href='legacy_upload.html'">Upload</div>
+            <div class="nav-btn" onclick="location.href='legacy_settings.html'">Settings</div>
+            <div class="nav-btn" onclick="logout()">Logout</div>
+        `;
+        document.getElementById("guestLabel").textContent = "";
+    } else {
+        box.innerHTML = `
+            <div class="nav-btn" onclick="location.href='legacy_settings.html'">Settings</div>
+            <div class="nav-btn" onclick="location.href='legacy_login.html'">Login</div>
+            <div class="nav-btn" onclick="location.href='legacy_register.html'">Register</div>
+        `;
+        document.getElementById("guestLabel").textContent = "Guest Mode";
+    }
+}
+
+function logout() {
+    localStorage.removeItem("token");
+    location.href = "legacy_index.html";
+}
+
+updateAuthButtons();
+
+// -------------------------------
+// SEARCH
+// -------------------------------
+function doSearch() {
+    const q = document.getElementById("searchInput").value.trim();
+    if (q) location.href = `legacy_search.html?q=${encodeURIComponent(q)}`;
+}
+
+// -------------------------------
+// LOAD PROFILE
+// -------------------------------
+const urlParams = new URLSearchParams(window.location.search);
+const username = urlParams.get("user");
+
+if (!username) {
+    document.getElementById("profileName").textContent = "User not found";
+}
+
+async function loadProfile() {
+    const res = await fetch("backend/users.json");
+    const users = await res.json();
+
+    const user = users.find(u => u.username.toLowerCase() === username.toLowerCase());
+
+    if (!user) {
+        document.getElementById("profileName").textContent = "User not found";
+        return;
+    }
+
+    document.getElementById("profileName").textContent = user.username;
+    document.getElementById("profileBio").textContent = "Bio: " + (user.bio || "No bio set.");
+    document.getElementById("profileJoin").textContent = "Joined: " + (user.joined || "Unknown");
+
+    if (user.pfp) {
+        document.getElementById("profilePic").src = "pfp/" + user.pfp;
+    }
+
+    // Show message button if logged in
+    if (localStorage.getItem("token")) {
+        document.getElementById("msgButton").style.display = "inline-block";
+    }
+}
+
+loadProfile();
+
+// -------------------------------
+// LOAD USER VIDEOS
+// -------------------------------
+async function loadVideos() {
+    const res = await fetch("backend/videos.json");
+    const videos = await res.json();
+
+    const list = document.getElementById("videoList");
+    list.innerHTML = "";
+
+    const userVideos = videos.filter(v => v.uploader.toLowerCase() === username.toLowerCase());
+
+    if (userVideos.length === 0) {
+        list.innerHTML = "<p>No videos uploaded.</p>";
+        return;
+    }
+
+    userVideos.forEach(v => {
+        list.innerHTML += `
+            <div class="video-item" onclick="location.href='legacy_watch.html?id=${v.id}'">
+                <img src="thumbnails/${v.thumbnail}">
+                <div>
+                    <div class="video-title">${v.title}</div>
+                    <div class="video-meta">${v.views} views</div>
+                </div>
+            </div>
+        `;
+    });
+}
+
+loadVideos();
+
+// -------------------------------
+// MESSAGE USER
+// -------------------------------
+function messageUser() {
+    location.href = `legacy_inbox.html?compose=${username}`;
+}
+</script>
+
+</body>
+</html>

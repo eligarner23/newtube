@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NewTube Classic – Inbox</title>
+
+    <link rel="icon" type="image/png" href="favicon.png">
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        /* Light Theme */
+        body.light { background-color: #e2e2e2; color: black; }
+        .topbar.light { background-color: #cc0000; color: white; }
+        .content-box.light, .message-box.light { background-color: white; color: black; }
+
+        /* Dark Theme */
+        body.dark { background-color: #1a1a1a; color: white; }
+        .topbar.dark { background-color: #111; color: white; }
+        .content-box.dark, .message-box.dark { background-color: #2a2a2a; color: white; }
+
+        /* Topbar */
+        .topbar {
+            padding: 6px 20px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #000;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            margin-right: 30px;
+            cursor: pointer;
+        }
+
+        .tabs { margin-left: 20px; font-size: 14px; }
+        .tabs span { margin-right: 15px; cursor: pointer; color: white; }
+        .tabs span:hover { text-decoration: underline; }
+
+        .search-box { display: flex; flex: 1; margin-left: 40px; }
+        .search-box input { width: 100%; padding: 5px; border: 1px solid #888; border-right: none; }
+        .search-box button { padding: 6px 12px; border: 1px solid #888; background-color: #f2f2f2; cursor: pointer; }
+
+        .nav-btn {
+            margin-left: 15px;
+            background-color: white;
+            color: #cc0000;
+            padding: 5px 10px;
+            border: 1px solid #cc0000;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* Layout */
+        .container {
+            width: 900px;
+            margin: 20px auto;
+            display: flex;
+            gap: 20px;
+        }
+
+        .content-box {
+            flex: 1;
+            padding: 15px;
+            border: 1px solid #aaa;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: bold;
+            border-bottom: 1px solid #aaa;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+        }
+
+        .message-item {
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+            cursor: pointer;
+        }
+
+        .message-item:hover {
+            background-color: #ddd;
+        }
+
+        .message-from {
+            font-weight: bold;
+            color: #0033cc;
+        }
+
+        .message-subject {
+            font-size: 14px;
+        }
+
+        .message-box {
+            margin-top: 15px;
+            padding: 10px;
+            border: 1px solid #aaa;
+        }
+
+        .compose-box {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #aaa;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 7px;
+            border: 1px solid #888;
+            margin-top: 5px;
+        }
+
+        textarea {
+            height: 80px;
+            resize: none;
+        }
+
+        .send-btn, .delete-btn {
+            background-color: #cc0000;
+            color: white;
+            padding: 7px 12px;
+            border: 1px solid #880000;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .send-btn:hover, .delete-btn:hover {
+            background-color: #b30000;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- Topbar -->
+<div class="topbar">
+    <div class="logo" onclick="location.href='legacy_index.html'">NewTube</div>
+
+    <div class="tabs">
+        <span onclick="location.href='legacy_search.html?q=all'">Videos</span>
+        <span onclick="location.href='legacy_channels.html'">Channels</span>
+        <span onclick="location.href='legacy_community.html'">Community</span>
+        <span onclick="location.href='legacy_inbox.html'">Inbox</span>
+    </div>
+
+    <div class="search-box">
+        <input id="searchInput" type="text" placeholder="Search videos…">
+        <button onclick="doSearch()">Search</button>
+    </div>
+
+    <div id="authButtons" style="display:flex; gap:10px; margin-left:20px;"></div>
+    <div id="guestLabel" style="margin-left:10px; font-weight:bold;"></div>
+</div>
+
+<div class="container">
+    <div class="content-box" id="contentBox">
+
+        <div class="section-title">Inbox</div>
+
+        <div id="messageList">Loading messages…</div>
+
+        <div class="message-box" id="messageView" style="display:none;"></div>
+
+        <div class="compose-box" id="composeBox" style="display:none;">
+            <h3>Compose Message</h3>
+            <label>To:</label>
+            <input id="msgTo" type="text">
+
+            <label>Subject:</label>
+            <input id="msgSubject" type="text">
+
+            <label>Message:</label>
+            <textarea id="msgBody"></textarea>
+
+            <button class="send-btn" onclick="sendMessage()">Send</button>
+            <p id="sendStatus"></p>
+        </div>
+
+    </div>
+</div>
+
+<script>
+// -------------------------------
+// THEME SYSTEM
+// -------------------------------
+function applyTheme() {
+    let theme = localStorage.getItem("token")
+        ? localStorage.getItem("user_theme") || "light"
+        : localStorage.getItem("g_theme") || "light";
+
+    document.body.className = theme;
+    document.querySelector(".topbar").className = "topbar " + theme;
+    document.getElementById("contentBox").className = "content-box " + theme;
+}
+
+applyTheme();
+
+// -------------------------------
+// AUTH BUTTONS
+// -------------------------------
+function updateAuthButtons() {
+    const token = localStorage.getItem("token");
+    const box = document.getElementById("authButtons");
+
+    if (token) {
+        box.innerHTML = `
+            <div class="nav-btn" onclick="location.href='legacy_upload.html'">Upload</div>
+            <div class="nav-btn" onclick="location.href='legacy_settings.html'">Settings</div>
+            <div class="nav-btn" onclick="logout()">Logout</div>
+        `;
+        document.getElementById("guestLabel").textContent = "";
+        document.getElementById("composeBox").style.display = "block";
+    } else {
+        box.innerHTML = `
+            <div class="nav-btn" onclick="location.href='legacy_settings.html'">Settings</div>
+            <div class="nav-btn" onclick="location.href='legacy_login.html'">Login</div>
+            <div class="nav-btn" onclick="location.href='legacy_register.html'">Register</div>
+        `;
+        document.getElementById("guestLabel").textContent = "Guest Mode";
+        document.getElementById("composeBox").style.display = "none";
+    }
+}
+
+function logout() {
+    localStorage.removeItem("token");
+    location.href = "legacy_index.html";
+}
+
+updateAuthButtons();
+
+// -------------------------------
+// SEARCH
+// -------------------------------
+function doSearch() {
+    const q = document.getElementById("searchInput").value.trim();
+    if (q) location.href = `legacy_search.html?q=${encodeURIComponent(q)}`;
+}
+
+// -------------------------------
+// LOAD MESSAGES
+// -------------------------------
+async function loadMessages() {
+    const token = localStorage.getItem("token") || "guest";
+
+    const res = await fetch(`backend/api.php?route=getMessages&token=${token}`);
+    const messages = await res.json();
+
+    const list = document.getElementById("messageList");
+    list.innerHTML = "";
+
+    if (messages.length === 0) {
+        list.innerHTML = "<p>No messages.</p>";
+        return;
+    }
+
+    messages.forEach(m => {
+        list.innerHTML += `
+            <div class="message-item" onclick="openMessage(${m.id})">
+                <div class="message-from">${m.from}</div>
+                <div class="message-subject">${m.subject}</div>
+            </div>
+        `;
+    });
+}
+
+loadMessages();
+
+// -------------------------------
+// OPEN MESSAGE
+// -------------------------------
+async function openMessage(id) {
+    const res = await fetch(`backend/api.php?route=getMessage&id=${id}`);
+    const msg = await res.json();
+
+    const box = document.getElementById("messageView");
+    box.style.display = "block";
+
+    box.innerHTML = `
+        <h3>${msg.subject}</h3>
+        <p><strong>From:</strong> ${msg.from}</p>
+        <p>${msg.body}</p>
+        <button class="delete-btn" onclick="deleteMessage(${msg.id})">Delete</button>
+    `;
+}
+
+// -------------------------------
+// DELETE MESSAGE
+// -------------------------------
+async function deleteMessage(id) {
+    const token = localStorage.getItem("token") || "guest";
+
+    await fetch("backend/api.php?route=deleteMessage", {
+        method: "POST",
+        body: JSON.stringify({ token, id })
+    });
+
+    loadMessages();
+    document.getElementById("messageView").style.display = "none";
+}
+
+// -------------------------------
+// SEND MESSAGE
+// -------------------------------
+async function sendMessage() {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    const to = document.getElementById("msgTo").value.trim();
+    const subject = document.getElementById("msgSubject").value.trim();
+    const body = document.getElementById("msgBody").value.trim();
+
+    if (!to || !subject || !body) {
+        document.getElementById("sendStatus").textContent = "Fill all fields.";
+        return;
+    }
+
+    const res = await fetch("backend/api.php?route=sendMessage", {
+        method: "POST",
+        body: JSON.stringify({ token, to, subject, body })
+    });
+
+    const json = await res.json();
+
+    if (json.success) {
+        document.getElementById("sendStatus").textContent = "Message sent!";
+        loadMessages();
+    } else {
+        document.getElementById("sendStatus").textContent = json.message || "Failed to send.";
+    }
+}
+</script>
+
+</body>
+</html>

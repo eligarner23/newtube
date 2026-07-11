@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NewTube – Search</title>
+    
+        <!-- Favicon -->
+    <link rel="icon" type="image/png" href="favicon.png">
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        /* Light Theme */
+        body.light {
+            background-color: #ececec;
+            color: black;
+        }
+
+        .topbar.light {
+            background-color: #cc0000;
+            color: white;
+        }
+
+        .video-card.light {
+            background-color: white;
+            color: black;
+        }
+
+        /* Dark Theme */
+        body.dark {
+            background-color: #1a1a1a;
+            color: white;
+        }
+
+        .topbar.dark {
+            background-color: #111;
+            color: white;
+        }
+
+        .video-card.dark {
+            background-color: #2a2a2a;
+            color: white;
+        }
+
+        /* Topbar */
+        .topbar {
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 26px;
+            font-weight: bold;
+            margin-right: 30px;
+            cursor: pointer;
+        }
+
+        .search-box {
+            flex: 1;
+            display: flex;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 6px;
+            border: none;
+            border-radius: 2px 0 0 2px;
+        }
+
+        .search-box button {
+            padding: 6px 12px;
+            border: none;
+            background-color: #f2f2f2;
+            border-radius: 0 2px 2px 0;
+            cursor: pointer;
+        }
+
+        .nav-btn {
+            margin-left: 20px;
+            background-color: white;
+            color: #cc0000;
+            padding: 6px 12px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* Results */
+        .content {
+            width: 90%;
+            margin: 20px auto;
+        }
+
+        .section-title {
+            font-size: 20px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        .video-card {
+            padding: 10px;
+            border-radius: 4px;
+            box-shadow: 0 0 3px rgba(0,0,0,0.2);
+            cursor: pointer;
+        }
+
+        .thumbnail {
+            width: 100%;
+            height: 120px;
+            background-color: #d0d0d0;
+            border-radius: 3px;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .video-title {
+            font-size: 14px;
+            margin-top: 8px;
+            font-weight: bold;
+        }
+
+        .video-meta {
+            font-size: 12px;
+            color: #aaa;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- Topbar -->
+<div class="topbar">
+    <div class="logo" onclick="location.href='index.html'">NewTube</div>
+
+    <div class="search-box">
+        <input id="searchInput" type="text" placeholder="Search videos…">
+        <button onclick="doSearch()">Search</button>
+    </div>
+
+    <div id="authButtons" style="display:flex; gap:10px; margin-left:20px;"></div>
+
+    <div id="guestLabel" style="margin-left:10px; font-weight:bold;"></div>
+</div>
+
+<!-- Results -->
+<div class="content">
+    <div class="section-title">Search Results</div>
+    <div class="video-grid" id="resultsGrid"></div>
+</div>
+
+<script>
+// -------------------------------
+// THEME SYSTEM
+// -------------------------------
+function applyTheme() {
+    let theme = "light";
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+        theme = localStorage.getItem("g_theme") || "light";
+        showGuestLabel(true);
+    } else {
+        theme = localStorage.getItem("user_theme") || "light";
+        showGuestLabel(false);
+    }
+
+    document.body.classList.remove("light", "dark");
+    document.body.classList.add(theme);
+
+    const topbar = document.querySelector(".topbar");
+    topbar.classList.remove("light", "dark");
+    topbar.classList.add(theme);
+
+    document.querySelectorAll(".video-card").forEach(el => {
+        el.classList.remove("light", "dark");
+        el.classList.add(theme);
+    });
+}
+
+applyTheme();
+
+// -------------------------------
+// Topbar Buttons + Guest Mode
+// -------------------------------
+function updateAuthButtons() {
+    const token = localStorage.getItem("token");
+    const box = document.getElementById("authButtons");
+
+    if (token) {
+        box.innerHTML = `
+            <div class="nav-btn" onclick="location.href='upload.html'">Upload</div>
+            <div class="nav-btn" onclick="location.href='settings.html'">Settings</div>
+            <div class="nav-btn" onclick="logout()">Logout</div>
+        `;
+        showGuestLabel(false);
+    } else {
+        box.innerHTML = `
+            <div class="nav-btn" onclick="location.href='settings.html'">Settings</div>
+            <div class="nav-btn" onclick="location.href='login.html'">Login</div>
+            <div class="nav-btn" onclick="location.href='register.html'">Register</div>
+        `;
+        showGuestLabel(true);
+    }
+}
+
+function logout() {
+    localStorage.removeItem("token");
+    location.href = "index.html";
+}
+
+function showGuestLabel(isGuest) {
+    const label = document.getElementById("guestLabel");
+    label.style.color = "white";
+    label.textContent = isGuest ? "Guest Mode" : "";
+}
+
+updateAuthButtons();
+
+// -------------------------------
+// Search Logic
+// -------------------------------
+function doSearch() {
+    const q = document.getElementById("searchInput").value.trim();
+    if (q !== "") {
+        location.href = `search.html?q=${encodeURIComponent(q)}`;
+    }
+}
+
+const params = new URLSearchParams(window.location.search);
+const query = params.get("q") || "";
+
+// -------------------------------
+// Load Search Results
+// -------------------------------
+async function loadResults() {
+    if (!query) return;
+
+    document.getElementById("searchInput").value = query;
+
+    const res = await fetch(`backend/api.php?route=search&q=${encodeURIComponent(query)}`);
+    const videos = await res.json();
+
+    const grid = document.getElementById("resultsGrid");
+    grid.innerHTML = "";
+
+    if (videos.length === 0) {
+        grid.innerHTML = "<p>No results found.</p>";
+        return;
+    }
+
+    videos.forEach(video => {
+        const card = document.createElement("div");
+        card.className = "video-card";
+        card.onclick = () => location.href = `watch.html?id=${video.id}`;
+
+        card.innerHTML = `
+            <div class="thumbnail" style="background-image:url('thumbnails/${video.thumbnail}')"></div>
+            <div class="video-title">${video.title}</div>
+            <div class="video-meta">${video.uploader} • ${video.views} views</div>
+        `;
+
+        grid.appendChild(card);
+    });
+
+    applyTheme(); // Apply theme to new cards
+}
+
+loadResults();
+</script>
+
+</body>
+</html>

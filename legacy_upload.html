@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NewTube Classic – Upload</title>
+
+    <link rel="icon" type="image/png" href="favicon.png">
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        /* Light Theme */
+        body.light { background-color: #e2e2e2; color: black; }
+        .topbar.light { background-color: #cc0000; color: white; }
+        .content-box.light { background-color: white; color: black; }
+
+        /* Dark Theme */
+        body.dark { background-color: #1a1a1a; color: white; }
+        .topbar.dark { background-color: #111; color: white; }
+        .content-box.dark { background-color: #2a2a2a; color: white; }
+
+        /* Topbar */
+        .topbar {
+            padding: 6px 20px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #000;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            margin-right: 30px;
+            cursor: pointer;
+        }
+
+        /* Tabs */
+        .tabs { margin-left: 20px; font-size: 14px; }
+        .tabs span { margin-right: 15px; cursor: pointer; color: white; }
+        .tabs span:hover { text-decoration: underline; }
+
+        /* Search */
+        .search-box { display: flex; flex: 1; margin-left: 40px; }
+        .search-box input { width: 100%; padding: 5px; border: 1px solid #888; border-right: none; }
+        .search-box button { padding: 6px 12px; border: 1px solid #888; background-color: #f2f2f2; cursor: pointer; }
+
+        .nav-btn {
+            margin-left: 15px;
+            background-color: white;
+            color: #cc0000;
+            padding: 5px 10px;
+            border: 1px solid #cc0000;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* Layout */
+        .container {
+            width: 700px;
+            margin: 30px auto;
+        }
+
+        .content-box {
+            padding: 20px;
+            border: 1px solid #aaa;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            border-bottom: 1px solid #aaa;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+        }
+
+        .input-group { margin-bottom: 15px; }
+        .input-label { font-weight: bold; margin-bottom: 5px; display: block; }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 7px;
+            border: 1px solid #888;
+        }
+
+        textarea { height: 80px; resize: none; }
+
+        .upload-btn {
+            background-color: #cc0000;
+            color: white;
+            padding: 8px 14px;
+            border: 1px solid #880000;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .upload-btn:hover { background-color: #b30000; }
+
+        #status { margin-top: 10px; font-size: 14px; }
+    </style>
+</head>
+
+<body>
+
+<!-- Topbar -->
+<div class="topbar">
+    <div class="logo" onclick="location.href='legacy_index.html'">NewTube</div>
+
+    <div class="tabs">
+        <span onclick="location.href='legacy_search.html?q=all'">Videos</span>
+        <span onclick="location.href='legacy_channels.html'">Channels</span>
+        <span onclick="location.href='legacy_community.html'">Community</span>
+    </div>
+
+    <div class="search-box">
+        <input id="searchInput" type="text" placeholder="Search videos…">
+        <button onclick="doSearch()">Search</button>
+    </div>
+
+    <div id="authButtons" style="display:flex; gap:10px; margin-left:20px;"></div>
+    <div id="guestLabel" style="margin-left:10px; font-weight:bold;"></div>
+</div>
+
+<div class="container">
+    <div class="content-box" id="contentBox">
+
+        <div class="section-title">Upload a Video</div>
+
+        <div class="input-group">
+            <label class="input-label">Video File:</label>
+            <input id="videoFile" type="file" accept="video/*">
+        </div>
+
+        <div class="input-group">
+            <label class="input-label">Thumbnail (optional):</label>
+            <input id="thumbFile" type="file" accept="image/*">
+        </div>
+
+        <div class="input-group">
+            <label class="input-label">Title:</label>
+            <input id="title" type="text">
+        </div>
+
+        <div class="input-group">
+            <label class="input-label">Description:</label>
+            <textarea id="description"></textarea>
+        </div>
+
+        <div class="input-group">
+            <label class="input-label">Category:</label>
+            <select id="category">
+                <option>Music</option>
+                <option>Gaming</option>
+                <option>Comedy</option>
+                <option>Technology</option>
+                <option>Sports</option>
+            </select>
+        </div>
+
+        <button class="upload-btn" onclick="uploadVideo()">Upload Video</button>
+
+        <p id="status"></p>
+
+    </div>
+</div>
+
+<script>
+// -------------------------------
+// THEME SYSTEM
+// -------------------------------
+function applyTheme() {
+    let theme = localStorage.getItem("token")
+        ? localStorage.getItem("user_theme") || "light"
+        : localStorage.getItem("g_theme") || "light";
+
+    document.body.className = theme;
+    document.querySelector(".topbar").className = "topbar " + theme;
+    document.getElementById("contentBox").className = "content-box " + theme;
+}
+
+applyTheme();
+
+// -------------------------------
+// AUTH BUTTONS
+// -------------------------------
+function updateAuthButtons() {
+    const token = localStorage.getItem("token");
+    const box = document.getElementById("authButtons");
+
+    if (token) {
+        box.innerHTML = `
+            <div class="nav-btn" onclick="location.href='legacy_upload.html'">Upload</div>
+            <div class="nav-btn" onclick="location.href='legacy_settings.html'">Settings</div>
+            <div class="nav-btn" onclick="logout()">Logout</div>
+        `;
+        document.getElementById("guestLabel").textContent = "";
+    } else {
+        box.innerHTML = `
+            <div class="nav-btn" onclick="location.href='legacy_settings.html'">Settings</div>
+            <div class="nav-btn" onclick="location.href='legacy_login.html'">Login</div>
+            <div class="nav-btn" onclick="location.href='legacy_register.html'">Register</div>
+        `;
+        document.getElementById("guestLabel").textContent = "Guest Mode";
+    }
+}
+
+function logout() {
+    localStorage.removeItem("token");
+    location.href = "legacy_index.html";
+}
+
+updateAuthButtons();
+
+// -------------------------------
+// SEARCH
+// -------------------------------
+function doSearch() {
+    const q = document.getElementById("searchInput").value.trim();
+    if (q) location.href = `legacy_search.html?q=${encodeURIComponent(q)}`;
+}
+
+// -------------------------------
+// UPLOAD VIDEO
+// -------------------------------
+async function uploadVideo() {
+    const token = localStorage.getItem("token");
+    if (!token) {
+        document.getElementById("status").textContent = "You must be logged in to upload.";
+        return;
+    }
+
+    const video = document.getElementById("videoFile").files[0];
+    const thumb = document.getElementById("thumbFile").files[0];
+    const title = document.getElementById("title").value.trim();
+    const description = document.getElementById("description").value.trim();
+    const category = document.getElementById("category").value;
+
+    if (!video || !title) {
+        document.getElementById("status").textContent = "Please select a video and enter a title.";
+        return;
+    }
+
+    const form = new FormData();
+    form.append("token", token);
+    form.append("title", title);
+    form.append("description", description);
+    form.append("category", category);
+    form.append("video", video);
+    if (thumb) form.append("thumbnail", thumb);
+
+    document.getElementById("status").textContent = "Uploading...";
+
+    const res = await fetch("backend/api.php?route=upload", {
+        method: "POST",
+        body: form
+    });
+
+    const json = await res.json();
+
+    if (json.success) {
+        document.getElementById("status").textContent = "Upload complete! Redirecting...";
+        setTimeout(() => location.href = "legacy_index.html", 1200);
+    } else {
+        document.getElementById("status").textContent = json.message || "Upload failed.";
+    }
+}
+</script>
+
+</body>
+</html>

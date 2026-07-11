@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NewTube Classic – Channels</title>
+
+    <link rel="icon" type="image/png" href="favicon.png">
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        /* Light Theme */
+        body.light {
+            background-color: #e2e2e2;
+            color: black;
+        }
+
+        .topbar.light {
+            background-color: #cc0000;
+            color: white;
+        }
+
+        .sidebar.light,
+        .content-box.light {
+            background-color: white;
+            color: black;
+        }
+
+        /* Dark Theme */
+        body.dark {
+            background-color: #1a1a1a;
+            color: white;
+        }
+
+        .topbar.dark {
+            background-color: #111;
+            color: white;
+        }
+
+        .sidebar.dark,
+        .content-box.dark {
+            background-color: #2a2a2a;
+            color: white;
+        }
+
+        /* Classic Topbar */
+        .topbar {
+            padding: 6px 20px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #000;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            margin-right: 30px;
+            cursor: pointer;
+        }
+
+        /* Tabs */
+        .tabs {
+            margin-left: 20px;
+            font-size: 14px;
+        }
+
+        .tabs span {
+            margin-right: 15px;
+            cursor: pointer;
+            color: white;
+        }
+
+        .tabs span:hover {
+            text-decoration: underline;
+        }
+
+        /* Search Bar */
+        .search-box {
+            display: flex;
+            flex: 1;
+            margin-left: 40px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 5px;
+            border: 1px solid #888;
+            border-right: none;
+        }
+
+        .search-box button {
+            padding: 6px 12px;
+            border: 1px solid #888;
+            background-color: #f2f2f2;
+            cursor: pointer;
+        }
+
+        .nav-btn {
+            margin-left: 15px;
+            background-color: white;
+            color: #cc0000;
+            padding: 5px 10px;
+            border: 1px solid #cc0000;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* Layout */
+        .container {
+            width: 960px;
+            margin: 15px auto;
+            display: flex;
+            gap: 20px;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 200px;
+            padding: 10px;
+            border: 1px solid #aaa;
+        }
+
+        .sidebar h3 {
+            margin-top: 0;
+            font-size: 14px;
+            border-bottom: 1px solid #aaa;
+            padding-bottom: 4px;
+        }
+
+        .sidebar-item {
+            padding: 5px 0;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .sidebar-item:hover {
+            text-decoration: underline;
+        }
+
+        /* Main Content */
+        .content-box {
+            flex: 1;
+            padding: 15px;
+            border: 1px solid #aaa;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            border-bottom: 1px solid #aaa;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+        }
+
+        .placeholder {
+            font-size: 14px;
+            margin-top: 10px;
+            color: #555;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- Topbar -->
+<div class="topbar">
+    <div class="logo" onclick="location.href='legacy_index.html'">NewTube</div>
+
+    <div class="tabs">
+        <span onclick="location.href='legacy_search.html?q=all'">Videos</span>
+        <span onclick="location.href='legacy_channels.html'">Channels</span>
+        <span onclick="location.href='legacy_community.html'">Community</span>
+    </div>
+
+    <div class="search-box">
+        <input id="searchInput" type="text" placeholder="Search videos…">
+        <button onclick="doSearch()">Search</button>
+    </div>
+
+    <div id="authButtons" style="display:flex; gap:10px; margin-left:20px;"></div>
+    <div id="guestLabel" style="margin-left:10px; font-weight:bold;"></div>
+</div>
+
+<div class="container">
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebarBox">
+        <h3>Categories</h3>
+        <div class="sidebar-item" onclick="goCat('Music')">Music</div>
+        <div class="sidebar-item" onclick="goCat('Gaming')">Gaming</div>
+        <div class="sidebar-item" onclick="goCat('Comedy')">Comedy</div>
+        <div class="sidebar-item" onclick="goCat('Technology')">Technology</div>
+        <div class="sidebar-item" onclick="goCat('Sports')">Sports</div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content-box" id="contentBox">
+        <div class="section-title">Channels</div>
+
+        <div class="placeholder">
+            Channel browsing is coming soon.<br>
+            This page will list creators, featured channels, and categories — just like early 2009 YouTube.
+        </div>
+    </div>
+
+</div>
+
+<script>
+// -------------------------------
+// THEME SYSTEM
+// -------------------------------
+function applyTheme() {
+    let theme = localStorage.getItem("token")
+        ? localStorage.getItem("user_theme") || "light"
+        : localStorage.getItem("g_theme") || "light";
+
+    document.body.className = theme;
+    document.querySelector(".topbar").className = "topbar " + theme;
+
+    document.querySelectorAll(".sidebar, .content-box")
+        .forEach(el => el.className = el.className.split(" ")[0] + " " + theme);
+}
+
+applyTheme();
+
+// -------------------------------
+// AUTH BUTTONS
+// -------------------------------
+function updateAuthButtons() {
+    const token = localStorage.getItem("token");
+    const box = document.getElementById("authButtons");
+
+    if (token) {
+        box.innerHTML = `
+            <div class="nav-btn" onclick="location.href='legacy_upload.html'">Upload</div>
+            <div class="nav-btn" onclick="location.href='legacy_settings.html'">Settings</div>
+            <div class="nav-btn" onclick="logout()">Logout</div>
+        `;
+        document.getElementById("guestLabel").textContent = "";
+    } else {
+        box.innerHTML = `
+            <div class="nav-btn" onclick="location.href='legacy_settings.html'">Settings</div>
+            <div class="nav-btn" onclick="location.href='legacy_login.html'">Login</div>
+            <div class="nav-btn" onclick="location.href='legacy_register.html'">Register</div>
+        `;
+        document.getElementById("guestLabel").textContent = "Guest Mode";
+    }
+}
+
+function logout() {
+    localStorage.removeItem("token");
+    location.href = "legacy_index.html";
+}
+
+updateAuthButtons();
+
+// -------------------------------
+// SEARCH
+// -------------------------------
+function doSearch() {
+    const q = document.getElementById("searchInput").value.trim();
+    if (q) location.href = `legacy_search.html?q=${encodeURIComponent(q)}`;
+}
+
+// -------------------------------
+// CATEGORY REDIRECT
+// -------------------------------
+function goCat(name) {
+    location.href = `legacy_search.html?q=${encodeURIComponent(name)}`;
+}
+</script>
+
+</body>
+</html>

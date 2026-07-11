@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NewTube Classic – Search Results</title>
+
+    <link rel="icon" type="image/png" href="favicon.png">
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        /* Light Theme */
+        body.light {
+            background-color: #e2e2e2;
+            color: black;
+        }
+
+        .topbar.light {
+            background-color: #cc0000;
+            color: white;
+        }
+
+        .sidebar.light,
+        .results-box.light,
+        .video-card.light {
+            background-color: white;
+            color: black;
+        }
+
+        /* Dark Theme */
+        body.dark {
+            background-color: #1a1a1a;
+            color: white;
+        }
+
+        .topbar.dark {
+            background-color: #111;
+            color: white;
+        }
+
+        .sidebar.dark,
+        .results-box.dark,
+        .video-card.dark {
+            background-color: #2a2a2a;
+            color: white;
+        }
+
+        /* Topbar */
+        .topbar {
+            padding: 6px 20px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #000;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            margin-right: 30px;
+            cursor: pointer;
+        }
+
+        /* Tabs */
+        .tabs {
+            margin-left: 20px;
+            font-size: 14px;
+        }
+
+        .tabs span {
+            margin-right: 15px;
+            cursor: pointer;
+            color: white;
+        }
+
+        .tabs span:hover {
+            text-decoration: underline;
+        }
+
+        /* Search Bar */
+        .search-box {
+            display: flex;
+            flex: 1;
+            margin-left: 40px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 5px;
+            border: 1px solid #888;
+            border-right: none;
+        }
+
+        .search-box button {
+            padding: 6px 12px;
+            border: 1px solid #888;
+            background-color: #f2f2f2;
+            cursor: pointer;
+        }
+
+        .nav-btn {
+            margin-left: 15px;
+            background-color: white;
+            color: #cc0000;
+            padding: 5px 10px;
+            border: 1px solid #cc0000;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* Layout */
+        .container {
+            width: 960px;
+            margin: 15px auto;
+            display: flex;
+            gap: 20px;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 200px;
+            padding: 10px;
+            border: 1px solid #aaa;
+        }
+
+        .sidebar h3 {
+            margin-top: 0;
+            font-size: 14px;
+            border-bottom: 1px solid #aaa;
+            padding-bottom: 4px;
+        }
+
+        .sidebar-item {
+            padding: 5px 0;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .sidebar-item:hover {
+            text-decoration: underline;
+        }
+
+        /* Results */
+        .results-box {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #aaa;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: bold;
+            border-bottom: 1px solid #aaa;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+        }
+
+        .video-card {
+            display: flex;
+            gap: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid #ccc;
+            cursor: pointer;
+        }
+
+        .thumb-small {
+            width: 120px;
+            height: 90px;
+            background-color: #ccc;
+            background-size: cover;
+            background-position: center;
+            border: 1px solid #999;
+        }
+
+        .video-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #0033cc;
+        }
+
+        .video-title:hover {
+            text-decoration: underline;
+        }
+
+        .video-meta {
+            font-size: 11px;
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- Topbar -->
+<div class="topbar">
+    <div class="logo" onclick="location.href='legacy_index.html'">NewTube</div>
+
+    <div class="tabs">
+        <span onclick="location.href='legacy_search.html?q=all'">Videos</span>
+        <span onclick="location.href='legacy_channels.html'">Channels</span>
+        <span onclick="location.href='legacy_community.html'">Community</span>
+    </div>
+
+    <div class="search-box">
+        <input id="searchInput" type="text" placeholder="Search videos…">
+        <button onclick="doSearch()">Search</button>
+    </div>
+
+    <div id="authButtons" style="display:flex; gap:10px; margin-left:20px;"></div>
+    <div id="guestLabel" style="margin-left:10px; font-weight:bold;"></div>
+</div>
+
+<div class="container">
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebarBox">
+        <h3>Categories</h3>
+        <div class="sidebar-item" onclick="goCat('Music')">Music</div>
+        <div class="sidebar-item" onclick="goCat('Gaming')">Gaming</div>
+        <div class="sidebar-item" onclick="goCat('Comedy')">Comedy</div>
+        <div class="sidebar-item" onclick="goCat('Technology')">Technology</div>
+        <div class="sidebar-item" onclick="goCat('Sports')">Sports</div>
+    </div>
+
+    <!-- Results -->
+    <div class="results-box" id="resultsBox">
+        <div class="section-title" id="resultsTitle">Search Results</div>
+        <div id="resultsList"></div>
+    </div>
+
+</div>
+
+<script>
+// -------------------------------
+// THEME SYSTEM
+// -------------------------------
+function applyTheme() {
+    let theme = localStorage.getItem("token")
+        ? localStorage.getItem("user_theme") || "light"
+        : localStorage.getItem("g_theme") || "light";
+
+    document.body.className = theme;
+    document.querySelector(".topbar").className = "topbar " + theme;
+
+    document.querySelectorAll(".sidebar, .results-box, .video-card")
+        .forEach(el => el.className = el.className.split(" ")[0] + " " + theme);
+}
+
+applyTheme();
+
+// -------------------------------
+// AUTH BUTTONS
+// -------------------------------
+function updateAuthButtons() {
+    const token = localStorage.getItem("token");
+    const box = document.getElementById("authButtons");
+
+    if (token) {
+        box.innerHTML = `
+            <div class="nav-btn" onclick="location.href='legacy_upload.html'">Upload</div>
+            <div class="nav-btn" onclick="location.href='legacy_settings.html'">Settings</div>
+            <div class="nav-btn" onclick="logout()">Logout</div>
+        `;
+        document.getElementById("guestLabel").textContent = "";
+    } else {
+        box.innerHTML = `
+            <div class="nav-btn" onclick="location.href='legacy_settings.html'">Settings</div>
+            <div class="nav-btn" onclick="location.href='legacy_login.html'">Login</div>
+            <div class="nav-btn" onclick="location.href='legacy_register.html'">Register</div>
+        `;
+        document.getElementById("guestLabel").textContent = "Guest Mode";
+    }
+}
+
+function logout() {
+    localStorage.removeItem("token");
+    location.href = "legacy_index.html";
+}
+
+updateAuthButtons();
+
+// -------------------------------
+// SEARCH
+// -------------------------------
+function doSearch() {
+    const q = document.getElementById("searchInput").value.trim();
+    if (q) location.href = `legacy_search.html?q=${encodeURIComponent(q)}`;
+}
+
+// -------------------------------
+// CATEGORY REDIRECT
+// -------------------------------
+function goCat(name) {
+    location.href = `legacy_search.html?q=${encodeURIComponent(name)}`;
+}
+
+// -------------------------------
+// LOAD SEARCH RESULTS
+// -------------------------------
+async function loadResults() {
+    const params = new URLSearchParams(window.location.search);
+    const q = params.get("q") || "";
+
+    document.getElementById("resultsTitle").textContent = `Search Results for "${q}"`;
+
+    const res = await fetch("backend/videos.json");
+    const videos = await res.json();
+
+    const results = videos.filter(v =>
+        v.title.toLowerCase().includes(q.toLowerCase()) ||
+        v.uploader.toLowerCase().includes(q.toLowerCase())
+    );
+
+    const list = document.getElementById("resultsList");
+
+    if (results.length === 0) {
+        list.innerHTML = `<p>No results found.</p>`;
+        return;
+    }
+
+    results.forEach(v => {
+        list.innerHTML += `
+            <div class="video-card" onclick="location.href='legacy_watch.html?id=${v.id}'">
+                <div class="thumb-small" style="background-image:url('thumbnails/${v.thumbnail}')"></div>
+                <div>
+                    <div class="video-title">${v.title}</div>
+                    <div class="video-meta">${v.uploader} — ${v.views} views</div>
+                </div>
+            </div>
+        `;
+    });
+
+    applyTheme();
+}
+
+loadResults();
+</script>
+
+</body>
+</html>

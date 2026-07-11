@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NewTube Classic – Login</title>
+
+    <link rel="icon" type="image/png" href="favicon.png">
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        /* Light Theme */
+        body.light {
+            background-color: #e2e2e2;
+            color: black;
+        }
+
+        .topbar.light {
+            background-color: #cc0000;
+            color: white;
+        }
+
+        .content-box.light {
+            background-color: white;
+            color: black;
+        }
+
+        /* Dark Theme */
+        body.dark {
+            background-color: #1a1a1a;
+            color: white;
+        }
+
+        .topbar.dark {
+            background-color: #111;
+            color: white;
+        }
+
+        .content-box.dark {
+            background-color: #2a2a2a;
+            color: white;
+        }
+
+        /* Topbar */
+        .topbar {
+            padding: 6px 20px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #000;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            margin-right: 30px;
+            cursor: pointer;
+        }
+
+        /* Tabs */
+        .tabs {
+            margin-left: 20px;
+            font-size: 14px;
+        }
+
+        .tabs span {
+            margin-right: 15px;
+            cursor: pointer;
+            color: white;
+        }
+
+        .tabs span:hover {
+            text-decoration: underline;
+        }
+
+        /* Search Bar */
+        .search-box {
+            display: flex;
+            flex: 1;
+            margin-left: 40px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 5px;
+            border: 1px solid #888;
+            border-right: none;
+        }
+
+        .search-box button {
+            padding: 6px 12px;
+            border: 1px solid #888;
+            background-color: #f2f2f2;
+            cursor: pointer;
+        }
+
+        .nav-btn {
+            margin-left: 15px;
+            background-color: white;
+            color: #cc0000;
+            padding: 5px 10px;
+            border: 1px solid #cc0000;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* Layout */
+        .container {
+            width: 600px;
+            margin: 30px auto;
+        }
+
+        .content-box {
+            padding: 20px;
+            border: 1px solid #aaa;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            border-bottom: 1px solid #aaa;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        input {
+            width: 100%;
+            padding: 7px;
+            border: 1px solid #888;
+        }
+
+        .login-btn {
+            background-color: #cc0000;
+            color: white;
+            padding: 8px 14px;
+            border: 1px solid #880000;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .login-btn:hover {
+            background-color: #b30000;
+        }
+
+        #status {
+            margin-top: 10px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- Topbar -->
+<div class="topbar">
+    <div class="logo" onclick="location.href='legacy_index.html'">NewTube</div>
+
+    <div class="tabs">
+        <span onclick="location.href='legacy_search.html?q=all'">Videos</span>
+        <span onclick="location.href='legacy_channels.html'">Channels</span>
+        <span onclick="location.href='legacy_community.html'">Community</span>
+    </div>
+
+    <div class="search-box">
+        <input id="searchInput" type="text" placeholder="Search videos…">
+        <button onclick="doSearch()">Search</button>
+    </div>
+
+    <div id="authButtons" style="display:flex; gap:10px; margin-left:20px;"></div>
+    <div id="guestLabel" style="margin-left:10px; font-weight:bold;"></div>
+</div>
+
+<div class="container">
+    <div class="content-box" id="contentBox">
+
+        <div class="section-title">Login to Your Account</div>
+
+        <div class="input-group">
+            <label class="input-label">Username:</label>
+            <input id="username" type="text">
+        </div>
+
+        <div class="input-group">
+            <label class="input-label">Password:</label>
+            <input id="password" type="password">
+        </div>
+
+        <button class="login-btn" onclick="loginUser()">Login</button>
+
+        <p id="status"></p>
+
+    </div>
+</div>
+
+<script>
+// -------------------------------
+// THEME SYSTEM
+// -------------------------------
+function applyTheme() {
+    let theme = localStorage.getItem("token")
+        ? localStorage.getItem("user_theme") || "light"
+        : localStorage.getItem("g_theme") || "light";
+
+    document.body.className = theme;
+    document.querySelector(".topbar").className = "topbar " + theme;
+    document.getElementById("contentBox").className = "content-box " + theme;
+}
+
+applyTheme();
+
+// -------------------------------
+// AUTH BUTTONS
+// -------------------------------
+function updateAuthButtons() {
+    const token = localStorage.getItem("token");
+    const box = document.getElementById("authButtons");
+
+    if (token) {
+        box.innerHTML = `
+            <div class="nav-btn" onclick="location.href='legacy_upload.html'">Upload</div>
+            <div class="nav-btn" onclick="location.href='legacy_settings.html'">Settings</div>
+            <div class="nav-btn" onclick="logout()">Logout</div>
+        `;
+        document.getElementById("guestLabel").textContent = "";
+    } else {
+        box.innerHTML = `
+            <div class="nav-btn" onclick="location.href='legacy_settings.html'">Settings</div>
+            <div class="nav-btn" onclick="location.href='legacy_login.html'">Login</div>
+            <div class="nav-btn" onclick="location.href='legacy_register.html'">Register</div>
+        `;
+        document.getElementById("guestLabel").textContent = "Guest Mode";
+    }
+}
+
+function logout() {
+    localStorage.removeItem("token");
+    location.href = "legacy_index.html";
+}
+
+updateAuthButtons();
+
+// -------------------------------
+// SEARCH
+// -------------------------------
+function doSearch() {
+    const q = document.getElementById("searchInput").value.trim();
+    if (q) location.href = `legacy_search.html?q=${encodeURIComponent(q)}`;
+}
+
+// -------------------------------
+// LOGIN USER
+// -------------------------------
+async function loginUser() {
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value.trim();
+
+    if (!username || !password) {
+        document.getElementById("status").textContent = "Please enter both username and password.";
+        return;
+    }
+
+    const data = { username, password };
+
+    const res = await fetch("backend/api.php?route=login", {
+        method: "POST",
+        body: JSON.stringify(data)
+    });
+
+    const json = await res.json();
+
+    if (json.success) {
+        localStorage.setItem("token", json.token);
+        document.getElementById("status").textContent = "Login successful! Redirecting...";
+        setTimeout(() => location.href = "legacy_index.html", 1200);
+    } else {
+        document.getElementById("status").textContent = json.message || "Login failed.";
+    }
+}
+</script>
+
+</body>
+</html>
