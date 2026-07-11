@@ -5,7 +5,7 @@
     "description": "A random YouTube video used for testing NewTube.",
     "thumbnail": "thumb1.png",
     "file": "video1.mp4",
-    "channel": "RealTimeModds",
+    "uploader": "RealTimeModds",
     "views": 0,
     "uploaded": "2026-07-10"
   },
@@ -15,7 +15,7 @@
     "description": "A short funny moment captured on camera.",
     "thumbnail": "funny.png",
     "file": "video2.mp4",
-    "channel": "Guest_54321",
+    "uploader": "Guest_54321",
     "views": 12,
     "uploaded": "2026-07-11"
   },
@@ -25,7 +25,7 @@
     "description": "Quick gameplay showcase from a retro game.",
     "thumbnail": "gameplay.png",
     "file": "video3.mp4",
-    "channel": "PlayerOne",
+    "uploader": "PlayerOne",
     "views": 5,
     "uploaded": "2026-07-11"
   },
@@ -35,7 +35,7 @@
     "description": "A remix made using free samples and loops.",
     "thumbnail": "remix.png",
     "file": "video4.mp4",
-    "channel": "DJMix",
+    "uploader": "DJMix",
     "views": 3,
     "uploaded": "2026-07-11"
   },
@@ -45,7 +45,7 @@
     "description": "A short tutorial explaining how something works.",
     "thumbnail": "tutorial.png",
     "file": "video5.mp4",
-    "channel": "Eli",
+    "uploader": "Eli",
     "views": 1,
     "uploaded": "2026-07-11"
   }
