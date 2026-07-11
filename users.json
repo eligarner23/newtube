@@ -12,6 +12,12 @@
     "join_date": "2026-07-11"
   },
   {
+    "username": "Guest_24304",
+    "pfp": "default_guest.png",
+    "description": "This is a temporary guest channel.",
+    "join_date": "2026-07-11"
+  },
+  {
     "username": "PlayerOne",
     "pfp": "player.png",
     "description": "I upload gameplay demos and highlights.",
