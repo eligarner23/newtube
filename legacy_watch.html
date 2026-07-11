@@ -7,37 +7,22 @@
     <link rel="icon" type="image/png" href="favicon.png">
 
     <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-        }
+        body { margin: 0; font-family: Arial, sans-serif; }
 
-        /* Light Theme */
         body.light { background-color: #e2e2e2; color: black; }
-        .topbar.light { background-color: #cc0000; color: white; }
-        .video-box.light, .comment-item.light { background-color: white; color: black; }
-
-        /* Dark Theme */
         body.dark { background-color: #1a1a1a; color: white; }
-        .topbar.dark { background-color: #111; color: white; }
-        .video-box.dark, .comment-item.dark { background-color: #2a2a2a; color: white; }
 
-        /* Topbar */
         .topbar {
             padding: 6px 20px;
             display: flex;
             align-items: center;
             border-bottom: 1px solid #000;
         }
+        .topbar.light { background-color: #cc0000; color: white; }
+        .topbar.dark { background-color: #111; color: white; }
 
-        .logo {
-            font-size: 28px;
-            font-weight: bold;
-            margin-right: 30px;
-            cursor: pointer;
-        }
+        .logo { font-size: 28px; font-weight: bold; margin-right: 30px; cursor: pointer; }
 
-        .tabs { margin-left: 20px; font-size: 14px; }
         .tabs span { margin-right: 15px; cursor: pointer; color: white; }
         .tabs span:hover { text-decoration: underline; }
 
@@ -55,7 +40,6 @@
             font-weight: bold;
         }
 
-        /* Layout */
         .container {
             width: 960px;
             margin: 20px auto;
@@ -78,7 +62,6 @@
         .thumb {
             width: 120px;
             height: 70px;
-            background-color: #ccc;
             background-size: cover;
             background-position: center;
             border: 1px solid #888;
@@ -87,28 +70,12 @@
         .title { font-size: 14px; font-weight: bold; }
         .meta { font-size: 12px; color: #555; }
 
-        /* Comments */
-        .comments-section {
-            margin-top: 20px;
-            padding: 10px;
-            border-top: 1px solid #aaa;
-        }
-
-        .comment-item {
-            padding: 8px;
-            border-bottom: 1px solid #ccc;
-            margin-bottom: 8px;
-        }
-
-        .comment-user { font-weight: bold; color: #0033cc; }
-        .comment-text { margin-top: 3px; }
-        .comment-time { font-size: 12px; color: #777; }
+        .video-description { margin-top: 10px; font-size: 14px; }
     </style>
 </head>
 
 <body>
 
-<!-- Topbar -->
 <div class="topbar">
     <div class="logo" onclick="location.href='legacy_index.html'">NewTube</div>
 
@@ -124,32 +91,22 @@
         <button onclick="doSearch()">Search</button>
     </div>
 
-    <div id="authButtons" style="display:flex; gap:10px; margin-left:20px;"></div>
-    <div id="guestLabel" style="margin-left:10px; font-weight:bold;"></div>
+    <div class="nav-btn" onclick="location.href='legacy_upload.html'">Upload</div>
+    <div class="nav-btn" onclick="location.href='channel.html?u=' + (localStorage.getItem('username') || 'Guest')">My Channel</div>
+    <div class="nav-btn" onclick="location.href='legacy_settings.html'">Settings</div>
+    <div class="nav-btn" onclick="logout()">Logout</div>
 </div>
 
 <div class="container">
 
-    <!-- Main Video Area -->
     <div class="video-area">
         <video id="player" width="100%" height="auto" controls></video>
 
         <h2 id="videoTitle"></h2>
         <p id="videoMeta"></p>
-
-        <!-- Comments -->
-        <div class="comments-section">
-            <h3>Comments</h3>
-
-            <div id="commentList">Loading comments…</div>
-
-            <textarea id="commentInput" placeholder="Add a comment…" style="width:100%;height:60px;margin-top:10px;"></textarea>
-            <button onclick="postComment()" style="margin-top:6px;padding:6px 12px;">Post</button>
-            <p id="commentStatus"></p>
-        </div>
+        <p id="videoDesc" class="video-description"></p>
     </div>
 
-    <!-- Sidebar -->
     <div class="sidebar">
         <h3>Related Videos</h3>
         <div id="relatedList"></div>
@@ -158,174 +115,71 @@
 </div>
 
 <script>
-// -------------------------------
-// THEME SYSTEM
-// -------------------------------
+// Theme
 function applyTheme() {
-    let theme = localStorage.getItem("token")
-        ? localStorage.getItem("user_theme") || "light"
-        : localStorage.getItem("g_theme") || "light";
-
+    const theme = localStorage.getItem("user_theme") || "light";
     document.body.className = theme;
     document.querySelector(".topbar").className = "topbar " + theme;
-
-    document.querySelectorAll(".comment-item").forEach(el => {
-        el.className = "comment-item " + theme;
-    });
 }
-
 applyTheme();
 
-// -------------------------------
-// AUTH BUTTONS
-// -------------------------------
-function updateAuthButtons() {
-    const token = localStorage.getItem("token");
-    const box = document.getElementById("authButtons");
-
-    if (token) {
-        box.innerHTML = `
-            <div class="nav-btn" onclick="location.href='legacy_upload.html'">Upload</div>
-            <div class="nav-btn" onclick="location.href='legacy_settings.html'">Settings</div>
-            <div class="nav-btn" onclick="logout()">Logout</div>
-        `;
-        document.getElementById("guestLabel").textContent = "";
-    } else {
-        box.innerHTML = `
-            <div class="nav-btn" onclick="location.href='legacy_upload.html'">Upload</div>
-            <div class="nav-btn" onclick="location.href='legacy_settings.html'">Settings</div>
-            <div class="nav-btn" onclick="location.href='legacy_login.html'">Login</div>
-            <div class="nav-btn" onclick="location.href='legacy_register.html'">Register</div>
-        `;
-        document.getElementById("guestLabel").textContent = "Guest Mode";
-    }
-}
-
-function logout() {
-    localStorage.removeItem("token");
-    location.href = "legacy_index.html";
-}
-
-updateAuthButtons();
-
-// -------------------------------
-// SEARCH
-// -------------------------------
+// Search
 function doSearch() {
     const q = document.getElementById("searchInput").value.trim();
     if (q) location.href = `legacy_search.html?q=${encodeURIComponent(q)}`;
 }
 
-// -------------------------------
-// LOAD VIDEO
-// -------------------------------
+// Logout
+function logout() {
+    localStorage.removeItem("token");
+    location.href = "legacy_index.html";
+}
+
+// Get ?id=video1
 const params = new URLSearchParams(window.location.search);
 const videoId = params.get("id");
 
+// Load video
 async function loadVideo() {
-    const res = await fetch("backend/videos.json");
+    const res = await fetch("videos.json");
     const videos = await res.json();
 
-    const video = videos.find(v => v.id == videoId);
+    const video = videos.find(v => v.id === videoId);
 
     if (!video) {
         document.querySelector(".video-area").innerHTML = "<h2>Video not found.</h2>";
         return;
     }
 
-    // Increment view count
-    fetch(`backend/api.php?route=addView&id=${videoId}`);
-
-    document.getElementById("player").src = `uploads/${video.filename}`;
+    document.getElementById("player").src = "videos/" + video.file;
     document.getElementById("videoTitle").textContent = video.title;
-    document.getElementById("videoMeta").textContent = `${video.uploader} • ${video.views + 1} views`;
+    document.getElementById("videoMeta").textContent =
+        `${video.uploader} • ${video.views} views • Uploaded ${video.uploaded}`;
+    document.getElementById("videoDesc").textContent = video.description;
 
-    loadComments();
+    loadRelated(videos);
 }
 
-// -------------------------------
-// RELATED VIDEOS
-// -------------------------------
-async function loadRelated() {
-    const res = await fetch("backend/videos.json");
-    const videos = await res.json();
-
-    const related = videos.filter(v => v.id != videoId);
-
+// Related videos
+function loadRelated(videos) {
     const box = document.getElementById("relatedList");
 
-    related.forEach(v => {
-        box.innerHTML += `
-            <div class="related-box" onclick="location.href='legacy_watch.html?id=${v.id}'">
-                <div class="thumb" style="background-image:url('thumbnails/${v.thumbnail}')"></div>
-                <div>
-                    <div class="title">${v.title}</div>
-                    <div class="meta">${v.uploader} • ${v.views} views</div>
+    videos.forEach(v => {
+        if (v.id !== videoId) {
+            box.innerHTML += `
+                <div class="related-box" onclick="location.href='legacy_watch.html?id=${v.id}'">
+                    <div class="thumb" style="background-image:url('thumbs/${v.thumbnail}')"></div>
+                    <div>
+                        <div class="title">${v.title}</div>
+                        <div class="meta">${v.uploader} • ${v.views} views</div>
+                    </div>
                 </div>
-            </div>
-        `;
+            `;
+        }
     });
-}
-
-// -------------------------------
-// COMMENTS SYSTEM
-// -------------------------------
-async function loadComments() {
-    const res = await fetch(`backend/api.php?route=getComments&id=${videoId}`);
-    const comments = await res.json();
-
-    const list = document.getElementById("commentList");
-    list.innerHTML = "";
-
-    if (comments.length === 0) {
-        list.innerHTML = "<p>No comments yet.</p>";
-        return;
-    }
-
-    comments.forEach(c => {
-        list.innerHTML += `
-            <div class="comment-item ${document.body.className}">
-                <div class="comment-user">${c.user}</div>
-                <div class="comment-text">${c.text}</div>
-                <div class="comment-time">${c.time}</div>
-            </div>
-        `;
-    });
-
-    applyTheme();
-}
-
-async function postComment() {
-    const text = document.getElementById("commentInput").value.trim();
-    const token = localStorage.getItem("token") || "guest";
-
-    if (!text) {
-        document.getElementById("commentStatus").textContent = "Enter a comment.";
-        return;
-    }
-
-    const res = await fetch("backend/api.php?route=addComment", {
-        method: "POST",
-        body: JSON.stringify({
-            token,
-            video: videoId,
-            text
-        })
-    });
-
-    const json = await res.json();
-
-    if (json.success) {
-        document.getElementById("commentInput").value = "";
-        document.getElementById("commentStatus").textContent = "Posted!";
-        loadComments();
-    } else {
-        document.getElementById("commentStatus").textContent = "Failed to post.";
-    }
 }
 
 loadVideo();
-loadRelated();
 </script>
 
 </body>
