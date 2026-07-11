@@ -5,68 +5,17 @@
     <title>NewTube – Upload</title>
 
     <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-        }
+        body { margin: 0; font-family: Arial, sans-serif; }
+        body.light { background-color: #ececec; color: black; }
+        body.dark { background-color: #1a1a1a; color: white; }
 
-        /* Light Theme */
-        body.light {
-            background-color: #ececec;
-            color: black;
-        }
+        .topbar { padding: 10px 20px; display: flex; align-items: center; }
+        .topbar.light { background-color: #cc0000; color: white; }
+        .topbar.dark { background-color: #111; color: white; }
 
-        .topbar.light {
-            background-color: #cc0000;
-            color: white;
-        }
+        .logo { font-size: 26px; font-weight: bold; margin-right: 30px; cursor: pointer; }
+        .nav-btn { margin-left: 20px; background-color: white; color: #cc0000; padding: 6px 12px; border-radius: 3px; cursor: pointer; font-weight: bold; }
 
-        .upload-box.light {
-            background-color: white;
-            color: black;
-        }
-
-        /* Dark Theme */
-        body.dark {
-            background-color: #1a1a1a;
-            color: white;
-        }
-
-        .topbar.dark {
-            background-color: #111;
-            color: white;
-        }
-
-        .upload-box.dark {
-            background-color: #2a2a2a;
-            color: white;
-        }
-
-        /* Topbar */
-        .topbar {
-            padding: 10px 20px;
-            display: flex;
-            align-items: center;
-        }
-
-        .logo {
-            font-size: 26px;
-            font-weight: bold;
-            margin-right: 30px;
-            cursor: pointer;
-        }
-
-        .nav-btn {
-            margin-left: 20px;
-            background-color: white;
-            color: #cc0000;
-            padding: 6px 12px;
-            border-radius: 3px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        /* Upload Box */
         .upload-box {
             width: 50%;
             margin: 40px auto;
@@ -75,189 +24,117 @@
             box-shadow: 0 0 4px rgba(0,0,0,0.2);
         }
 
-        .section-title {
-            font-size: 22px;
-            font-weight: bold;
-            margin-bottom: 15px;
-        }
+        .upload-box.light { background-color: white; color: black; }
+        .upload-box.dark { background-color: #2a2a2a; color: white; }
 
-        .input-group {
-            margin-bottom: 15px;
-        }
+        .section-title { font-size: 22px; font-weight: bold; margin-bottom: 15px; }
+        .input-group { margin-bottom: 15px; }
+        .input-group input { width: 100%; padding: 8px; border-radius: 3px; border: 1px solid #aaa; }
 
-        .input-group input {
-            width: 100%;
-            padding: 8px;
-            border-radius: 3px;
-            border: 1px solid #aaa;
-        }
+        .submit-btn { background-color: #cc0000; color: white; padding: 10px 18px; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; }
+        .submit-btn:hover { background-color: #b30000; }
 
-        .submit-btn {
-            background-color: #cc0000;
-            color: white;
-            padding: 10px 18px;
-            border: none;
-            border-radius: 4px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-
-        .submit-btn:hover {
-            background-color: #b30000;
-        }
-
-        #status {
-            margin-top: 15px;
-            font-weight: bold;
-        }
+        textarea { width: 100%; height: 150px; margin-top: 20px; }
     </style>
 </head>
 
 <body>
 
-<!-- Topbar -->
-<div class="topbar">
+<div class="topbar" id="topbar">
     <div class="logo" onclick="location.href='index.html'">NewTube</div>
-
-    <!-- Dynamic Buttons -->
     <div id="authButtons" style="display:flex; gap:10px; margin-left:auto;"></div>
-
-    <!-- Guest Mode Label -->
     <div id="guestLabel" style="margin-left:10px; font-weight:bold;"></div>
 </div>
 
-<!-- Upload Box -->
 <div class="upload-box" id="uploadBox">
 
-    <div class="section-title">Upload a Video</div>
+    <div class="section-title">Upload a Video (Static Mode)</div>
 
-    <div id="uploadForm">
-
-        <div class="input-group">
-            <input id="title" type="text" placeholder="Video Title">
-        </div>
-
-        <div class="input-group">
-            <label>Video File:</label>
-            <input id="videoFile" type="file" accept="video/*">
-        </div>
-
-        <div class="input-group">
-            <label>Thumbnail (optional):</label>
-            <input id="thumbFile" type="file" accept="image/*">
-        </div>
-
-        <button class="submit-btn" onclick="uploadVideo()">Upload</button>
-
-        <p id="status"></p>
+    <div class="input-group">
+        <input id="title" type="text" placeholder="Video Title">
     </div>
 
+    <div class="input-group">
+        <label>Video File:</label>
+        <input id="videoFile" type="file" accept="video/*">
+    </div>
+
+    <div class="input-group">
+        <label>Thumbnail:</label>
+        <input id="thumbFile" type="file" accept="image/*">
+    </div>
+
+    <button class="submit-btn" onclick="generateJSON()">Generate JSON</button>
+
+    <textarea id="jsonOutput" placeholder="Your JSON will appear here..."></textarea>
+
+    <p id="status"></p>
 </div>
 
 <script>
-// -------------------------------
-// THEME SYSTEM
-// -------------------------------
+// THEME
 function applyTheme() {
-    let theme = "light";
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-        theme = localStorage.getItem("g_theme") || "light";
-        showGuestLabel(true);
-    } else {
-        theme = localStorage.getItem("user_theme") || "light";
-        showGuestLabel(false);
-    }
-
+    const theme = localStorage.getItem("user_theme") || "light";
     document.body.classList.remove("light", "dark");
     document.body.classList.add(theme);
 
-    const topbar = document.querySelector(".topbar");
-    topbar.classList.remove("light", "dark");
-    topbar.classList.add(theme);
+    document.getElementById("topbar").classList.remove("light", "dark");
+    document.getElementById("topbar").classList.add(theme);
 
-    const box = document.getElementById("uploadBox");
-    box.classList.remove("light", "dark");
-    box.classList.add(theme);
+    document.getElementById("uploadBox").classList.remove("light", "dark");
+    document.getElementById("uploadBox").classList.add(theme);
 }
-
 applyTheme();
 
-// -------------------------------
-// Topbar Buttons + Guest Mode
-// -------------------------------
+// AUTH BUTTONS
 function updateAuthButtons() {
-    const token = localStorage.getItem("token");
+    const username = localStorage.getItem("username") || "Guest_" + Math.floor(Math.random()*99999);
+    localStorage.setItem("username", username);
+
     const box = document.getElementById("authButtons");
 
-    if (token) {
-        box.innerHTML = `
-            <div class="nav-btn" onclick="location.href='upload.html'">Upload</div>
-            <div class="nav-btn" onclick="location.href='settings.html'">Settings</div>
-            <div class="nav-btn" onclick="logout()">Logout</div>
-        `;
-        showGuestLabel(false);
-    } else {
-        box.innerHTML = `
-            <div class="nav-btn" onclick="location.href='upload.html'">Upload</div>
-            <div class="nav-btn" onclick="location.href='settings.html'">Settings</div>
-            <div class="nav-btn" onclick="location.href='login.html'">Login</div>
-            <div class="nav-btn" onclick="location.href='register.html'">Register</div>
-        `;
-        showGuestLabel(true);
-    }
-}
+    box.innerHTML = `
+        <div class="nav-btn" onclick="location.href='upload.html'">Upload</div>
+        <div class="nav-btn" onclick="location.href='settings.html'">Settings</div>
+        <div class="nav-btn" onclick="logout()">Logout</div>
+    `;
 
-function logout() {
-    localStorage.removeItem("token");
-    location.href = "index.html";
+    document.getElementById("guestLabel").textContent =
+        username.startsWith("Guest") ? "Guest Mode" : "";
 }
-
-function showGuestLabel(isGuest) {
-    const label = document.getElementById("guestLabel");
-    label.style.color = "white";
-    label.textContent = isGuest ? "Guest Mode" : "";
-}
-
 updateAuthButtons();
 
-// -------------------------------
-// Upload Video (Guests Allowed)
-// -------------------------------
-async function uploadVideo() {
+function logout() {
+    localStorage.removeItem("username");
+    location.reload();
+}
+
+// JSON GENERATOR
+function generateJSON() {
     const title = document.getElementById("title").value.trim();
     const video = document.getElementById("videoFile").files[0];
     const thumb = document.getElementById("thumbFile").files[0];
 
-    if (!title || !video) {
-        document.getElementById("status").innerText = "Please enter a title and select a video.";
+    if (!title || !video || !thumb) {
+        document.getElementById("status").innerText = "Missing required fields.";
         return;
     }
 
-    const token = localStorage.getItem("token");
+    const id = video.name.replace(/\.[^/.]+$/, "");
 
-    const form = new FormData();
-    form.append("title", title);
-    form.append("uploader", token ? "User" : "Guest");
-    form.append("token", token || "guest");
-    form.append("video", video);
+    const json = {
+        id: id,
+        title: title,
+        description: "",
+        thumbnail: thumb.name,
+        file: video.name,
+        channel: localStorage.getItem("username") || "Guest",
+        views: 0,
+        uploaded: new Date().toISOString().split("T")[0]
+    };
 
-    if (thumb) form.append("thumbnail", thumb);
-
-    const res = await fetch("backend/api.php?route=upload", {
-        method: "POST",
-        body: form
-    });
-
-    const json = await res.json();
-
-    if (json.success) {
-        document.getElementById("status").innerText = "Upload successful!";
-        setTimeout(() => location.href = "watch.html?id=" + json.video.id, 1200);
-    } else {
-        document.getElementById("status").innerText = "Upload failed.";
-    }
+    document.getElementById("jsonOutput").value = JSON.stringify(json, null, 4);
+    document.getElementById("status").innerText = "Copy this JSON into videos.json and upload your files to GitHub.";
 }
 </script>
 
