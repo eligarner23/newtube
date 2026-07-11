@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NewTube – Channel</title>
+
+    <style>
+        body { margin: 0; font-family: Arial, sans-serif; }
+        body.light { background-color: #e2e2e2; color: black; }
+        body.dark { background-color: #1a1a1a; color: white; }
+
+        .topbar {
+            padding: 6px 20px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #000;
+        }
+        .topbar.light { background-color: #cc0000; color: white; }
+        .topbar.dark { background-color: #111; color: white; }
+
+        .logo { font-size: 28px; font-weight: bold; margin-right: 30px; cursor: pointer; }
+
+        .tabs span { margin-right: 15px; cursor: pointer; color: white; }
+        .tabs span:hover { text-decoration: underline; }
+
+        .nav-btn {
+            margin-left: 15px;
+            background-color: white;
+            color: #cc0000;
+            padding: 5px 10px;
+            border: 1px solid #cc0000;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .container { width: 960px; margin: 20px auto; }
+
+        .channel-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .pfp {
+            width: 120px;
+            height: 120px;
+            border-radius: 8px;
+            border: 1px solid #888;
+        }
+
+        .desc { margin-top: 5px; }
+        .join { font-size: 12px; color: #555; }
+
+        .edit-btn {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 6px 12px;
+            background-color: #cc0000;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .video-card {
+            border: 1px solid #aaa;
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        .thumb {
+            width: 100%;
+            height: 150px;
+            background-size: cover;
+            background-position: center;
+            border: 1px solid #888;
+        }
+
+        .title { font-size: 14px; font-weight: bold; margin-top: 8px; }
+    </style>
+</head>
+
+<body>
+
+<div class="topbar">
+    <div class="logo" onclick="location.href='legacy_index.html'">NewTube</div>
+
+    <div class="tabs">
+        <span onclick="location.href='legacy_index.html'">Videos</span>
+        <span onclick="location.href='legacy_channels.html'">Channels</span>
+        <span onclick="location.href='legacy_community.html'">Community</span>
+        <span onclick="location.href='legacy_inbox.html'">Inbox</span>
+    </div>
+
+    <div class="nav-btn" onclick="location.href='legacy_upload.html'">Upload</div>
+    <div class="nav-btn" onclick="location.href='channel.html?u=' + (localStorage.getItem('username') || 'Guest')">My Channel</div>
+    <div class="nav-btn" onclick="location.href='legacy_settings.html'">Settings</div>
+    <div class="nav-btn" onclick="logout()">Logout</div>
+</div>
+
+<div class="container">
+    <div class="channel-header">
+        <img id="pfp" class="pfp">
+        <div>
+            <h1 id="username"></h1>
+            <p id="description" class="desc"></p>
+            <p id="join" class="join"></p>
+            <a id="editBtn" class="edit-btn" style="display:none;" href="edit_profile.html">Edit Channel</a>
+        </div>
+    </div>
+
+    <hr>
+
+    <h2>Uploads</h2>
+    <div id="videoGrid" class="video-grid"></div>
+</div>
+
+<script>
+// Theme
+function applyTheme() {
+    const theme = localStorage.getItem("user_theme") || "light";
+    document.body.classList.add(theme);
+    document.querySelector(".topbar").classList.add(theme);
+}
+applyTheme();
+
+// Logout
+function logout() {
+    localStorage.removeItem("token");
+    location.href = "legacy_index.html";
+}
+
+// Get ?u=username
+const params = new URLSearchParams(window.location.search);
+const username = params.get("u") || "Guest";
+
+// Load user info from users.json
+async function loadUser() {
+    const res = await fetch("users.json");
+    const users = await res.json();
+
+    const user = users.find(u => u.username === username);
+
+    if (!user) {
+        document.getElementById("username").textContent = "Channel Not Found";
+        return;
+    }
+
+    document.getElementById("username").textContent = user.username;
+    document.getElementById("description").textContent = user.description;
+    document.getElementById("join").textContent = "Joined: " + user.join_date;
+    document.getElementById("pfp").src = "pfp/" + user.pfp;
+
+    if (localStorage.getItem("username") === username) {
+        document.getElementById("editBtn").style.display = "inline-block";
+    }
+}
+
+// Load videos.json and filter by uploader
+async function loadVideos() {
+    const res = await fetch("videos.json");
+    const videos = await res.json();
+
+    const grid = document.getElementById("videoGrid");
+    grid.innerHTML = "";
+
+    const userVideos = videos.filter(v => v.uploader === username);
+
+    userVideos.forEach(v => {
+        const card = document.createElement("div");
+        card.className = "video-card";
+        card.onclick = () => location.href = `legacy_watch.html?id=${v.id}`;
+
+        card.innerHTML = `
+            <div class="thumb" style="background-image:url('thumbs/${v.thumbnail}')"></div>
+            <p class="title">${v.title}</p>
+        `;
+
+        grid.appendChild(card);
+    });
+}
+
+loadUser();
+loadVideos();
+</script>
+
+</body>
+</html>
