@@ -99,7 +99,7 @@
     </div>
 
     <div class="nav-btn" onclick="location.href='legacy_upload.html'">Upload</div>
-    <div class="nav-btn" onclick="location.href='channel.html?u=' + (localStorage.getItem('username') || 'Guest')">My Channel</div>
+    <div class="nav-btn" onclick="location.href='channel.html?u=' + (localStorage.getItem('username') || 'Guest_' + Math.floor(Math.random()*99999))">My Channel</div>
     <div class="nav-btn" onclick="location.href='legacy_settings.html'">Settings</div>
     <div class="nav-btn" onclick="logout()">Logout</div>
 </div>
@@ -138,10 +138,34 @@ function logout() {
 
 // Get ?u=username
 const params = new URLSearchParams(window.location.search);
-const username = params.get("u") || "Guest";
+let username = params.get("u");
+
+// If no ?u= provided, use localStorage or generate guest
+if (!username) {
+    username = localStorage.getItem("username");
+    if (!username) {
+        username = "Guest_" + Math.floor(Math.random() * 99999);
+        localStorage.setItem("username", username);
+    }
+}
+
+// AUTO‑GENERATED GUEST CHANNELS
+function loadGuestChannel() {
+    document.getElementById("username").textContent = username;
+    document.getElementById("description").textContent = "This is a temporary guest channel.";
+    document.getElementById("join").textContent = "Joined: " + new Date().toISOString().split("T")[0];
+    document.getElementById("pfp").src = "default_guest.png"; // folderless
+}
 
 // Load user info from users.json
 async function loadUser() {
+    // Guest mode
+    if (username.startsWith("Guest_")) {
+        loadGuestChannel();
+        return;
+    }
+
+    // Normal user mode
     const res = await fetch("users.json");
     const users = await res.json();
 
@@ -155,7 +179,7 @@ async function loadUser() {
     document.getElementById("username").textContent = user.username;
     document.getElementById("description").textContent = user.description;
     document.getElementById("join").textContent = "Joined: " + user.join_date;
-    document.getElementById("pfp").src = "pfp/" + user.pfp;
+    document.getElementById("pfp").src = user.pfp; // folderless
 
     if (localStorage.getItem("username") === username) {
         document.getElementById("editBtn").style.display = "inline-block";
@@ -178,7 +202,7 @@ async function loadVideos() {
         card.onclick = () => location.href = `legacy_watch.html?id=${v.id}`;
 
         card.innerHTML = `
-            <div class="thumb" style="background-image:url('thumbs/${v.thumbnail}')"></div>
+            <div class="thumb" style="background-image:url('${v.thumbnail}')"></div>
             <p class="title">${v.title}</p>
         `;
 
