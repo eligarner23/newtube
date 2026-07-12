@@ -8,7 +8,6 @@
 
     <style>
         body { margin: 0; font-family: Arial, sans-serif; }
-
         body.light { background-color: #e2e2e2; color: black; }
         body.dark { background-color: #1a1a1a; color: white; }
 
@@ -151,7 +150,8 @@ async function loadVideo() {
         return;
     }
 
-    document.getElementById("player").src = "videos/" + video.file;
+    // FOLDERLESS: load from same directory
+    document.getElementById("player").src = video.file;
     document.getElementById("videoTitle").textContent = video.title;
     document.getElementById("videoMeta").textContent =
         `${video.uploader} • ${video.views} views • Uploaded ${video.uploaded}`;
@@ -168,7 +168,7 @@ function loadRelated(videos) {
         if (v.id !== videoId) {
             box.innerHTML += `
                 <div class="related-box" onclick="location.href='legacy_watch.html?id=${v.id}'">
-                    <div class="thumb" style="background-image:url('thumbs/${v.thumbnail}')"></div>
+                    <div class="thumb" style="background-image:url('${v.thumbnail}')"></div>
                     <div>
                         <div class="title">${v.title}</div>
                         <div class="meta">${v.uploader} • ${v.views} views</div>
