@@ -12,43 +12,14 @@
             font-family: Arial, sans-serif;
         }
 
-        /* Light Theme */
-        body.light {
-            background-color: #e2e2e2;
-            color: black;
-        }
+        body.light { background-color: #e2e2e2; color: black; }
+        .topbar.light { background-color: #cc0000; color: white; }
+        .sidebar.light, .results-box.light, .video-card.light { background-color: white; color: black; }
 
-        .topbar.light {
-            background-color: #cc0000;
-            color: white;
-        }
+        body.dark { background-color: #1a1a1a; color: white; }
+        .topbar.dark { background-color: #111; color: white; }
+        .sidebar.dark, .results-box.dark, .video-card.dark { background-color: #2a2a2a; color: white; }
 
-        .sidebar.light,
-        .results-box.light,
-        .video-card.light {
-            background-color: white;
-            color: black;
-        }
-
-        /* Dark Theme */
-        body.dark {
-            background-color: #1a1a1a;
-            color: white;
-        }
-
-        .topbar.dark {
-            background-color: #111;
-            color: white;
-        }
-
-        .sidebar.dark,
-        .results-box.dark,
-        .video-card.dark {
-            background-color: #2a2a2a;
-            color: white;
-        }
-
-        /* Topbar */
         .topbar {
             padding: 6px 20px;
             display: flex;
@@ -63,23 +34,10 @@
             cursor: pointer;
         }
 
-        /* Tabs */
-        .tabs {
-            margin-left: 20px;
-            font-size: 14px;
-        }
+        .tabs { margin-left: 20px; font-size: 14px; }
+        .tabs span { margin-right: 15px; cursor: pointer; color: white; }
+        .tabs span:hover { text-decoration: underline; }
 
-        .tabs span {
-            margin-right: 15px;
-            cursor: pointer;
-            color: white;
-        }
-
-        .tabs span:hover {
-            text-decoration: underline;
-        }
-
-        /* Search Bar */
         .search-box {
             display: flex;
             flex: 1;
@@ -110,7 +68,6 @@
             font-weight: bold;
         }
 
-        /* Layout */
         .container {
             width: 960px;
             margin: 15px auto;
@@ -118,7 +75,6 @@
             gap: 20px;
         }
 
-        /* Sidebar */
         .sidebar {
             width: 200px;
             padding: 10px;
@@ -138,11 +94,8 @@
             font-size: 13px;
         }
 
-        .sidebar-item:hover {
-            text-decoration: underline;
-        }
+        .sidebar-item:hover { text-decoration: underline; }
 
-        /* Results */
         .results-box {
             flex: 1;
             padding: 10px;
@@ -168,7 +121,6 @@
         .thumb-small {
             width: 120px;
             height: 90px;
-            background-color: #ccc;
             background-size: cover;
             background-position: center;
             border: 1px solid #999;
@@ -180,9 +132,7 @@
             color: #0033cc;
         }
 
-        .video-title:hover {
-            text-decoration: underline;
-        }
+        .video-title:hover { text-decoration: underline; }
 
         .video-meta {
             font-size: 11px;
@@ -193,7 +143,6 @@
 
 <body>
 
-<!-- Topbar -->
 <div class="topbar">
     <div class="logo" onclick="location.href='legacy_index.html'">NewTube</div>
 
@@ -214,7 +163,6 @@
 
 <div class="container">
 
-    <!-- Sidebar -->
     <div class="sidebar" id="sidebarBox">
         <h3>Categories</h3>
         <div class="sidebar-item" onclick="goCat('Music')">Music</div>
@@ -224,7 +172,6 @@
         <div class="sidebar-item" onclick="goCat('Sports')">Sports</div>
     </div>
 
-    <!-- Results -->
     <div class="results-box" id="resultsBox">
         <div class="section-title" id="resultsTitle">Search Results</div>
         <div id="resultsList"></div>
@@ -233,9 +180,7 @@
 </div>
 
 <script>
-// -------------------------------
-// THEME SYSTEM
-// -------------------------------
+// Theme
 function applyTheme() {
     let theme = localStorage.getItem("token")
         ? localStorage.getItem("user_theme") || "light"
@@ -247,12 +192,9 @@ function applyTheme() {
     document.querySelectorAll(".sidebar, .results-box, .video-card")
         .forEach(el => el.className = el.className.split(" ")[0] + " " + theme);
 }
-
 applyTheme();
 
-// -------------------------------
-// AUTH BUTTONS
-// -------------------------------
+// Auth buttons
 function updateAuthButtons() {
     const token = localStorage.getItem("token");
     const box = document.getElementById("authButtons");
@@ -281,31 +223,25 @@ function logout() {
 
 updateAuthButtons();
 
-// -------------------------------
-// SEARCH
-// -------------------------------
+// Search
 function doSearch() {
     const q = document.getElementById("searchInput").value.trim();
     if (q) location.href = `legacy_search.html?q=${encodeURIComponent(q)}`;
 }
 
-// -------------------------------
-// CATEGORY REDIRECT
-// -------------------------------
+// Category redirect
 function goCat(name) {
     location.href = `legacy_search.html?q=${encodeURIComponent(name)}`;
 }
 
-// -------------------------------
-// LOAD SEARCH RESULTS
-// -------------------------------
+// Load search results (folderless)
 async function loadResults() {
     const params = new URLSearchParams(window.location.search);
     const q = params.get("q") || "";
 
     document.getElementById("resultsTitle").textContent = `Search Results for "${q}"`;
 
-    const res = await fetch("backend/videos.json");
+    const res = await fetch("videos.json");
     const videos = await res.json();
 
     const results = videos.filter(v =>
@@ -323,7 +259,7 @@ async function loadResults() {
     results.forEach(v => {
         list.innerHTML += `
             <div class="video-card" onclick="location.href='legacy_watch.html?id=${v.id}'">
-                <div class="thumb-small" style="background-image:url('thumbnails/${v.thumbnail}')"></div>
+                <div class="thumb-small" style="background-image:url('${v.thumbnail}')"></div>
                 <div>
                     <div class="video-title">${v.title}</div>
                     <div class="video-meta">${v.uploader} — ${v.views} views</div>
